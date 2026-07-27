@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>75 Hard Tracker</title>
+
+  <!-- Web App Capabilities (Hides Browser Address Bar) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#121212">
+
+  <!-- Dynamic Web App Manifest -->
+  <link rel="manifest" id="manifest-placeholder">
+
   <style>
     :root {
       --bg: #121212;
@@ -221,6 +231,20 @@
   </div>
 
   <script>
+    // Generate Manifest dynamically so Chrome installs it standalone
+    const manifestData = {
+      name: "75 Hard Tracker",
+      short_name: "75 Hard",
+      start_url: window.location.origin + window.location.pathname,
+      display: "standalone",
+      background_color: "#121212",
+      theme_color: "#121212",
+      icons: [{ src: "https://cdn-icons-png.flaticon.com/512/1216/1216721.png", sizes: "512x512", type: "image/png" }]
+    };
+    const stringManifest = JSON.stringify(manifestData);
+    const blob = new Blob([stringManifest], {type: 'application/json'});
+    document.getElementById('manifest-placeholder').setAttribute('href', URL.createObjectURL(blob));
+
     let startDate = localStorage.getItem('75_startDate');
     if (!startDate) {
       startDate = new Date().toISOString().split('T')[0];
@@ -228,8 +252,18 @@
     }
     
     let counterDisplayMode = localStorage.getItem('75_counterMode') || 'left';
+    
+    // Always default active log date to actual current date
     let activeLogDate = new Date().toISOString().split('T')[0];
     let currentFilter = 'All';
+
+    function setDateToToday() {
+      activeLogDate = new Date().toISOString().split('T')[0];
+      const picker = document.getElementById('tracker-date-picker');
+      if (picker) picker.value = activeLogDate;
+      updateHeaderCounter();
+      loadChecklist();
+    }
 
     function calculateDayStats() {
       const start = new Date(startDate);
@@ -416,7 +450,6 @@
       alert(`Workout Logged for ${activeLogDate}!`);
     }
 
-    // Delete Logged Workout Function
     function deleteWorkout(id) {
       if (!confirm("Are you sure you want to delete this workout log?")) return;
       
@@ -424,7 +457,6 @@
       logs = logs.filter(w => w.id !== id);
       localStorage.setItem('75_workouts', JSON.stringify(logs));
 
-      // Refresh current views
       renderAllWorkouts(currentFilter);
       if (document.getElementById('calendar-picker').value) {
         loadCalendarDayData();
@@ -503,10 +535,10 @@
       resEl.innerHTML = html;
     }
 
-    document.getElementById('tracker-date-picker').value = activeLogDate;
-    updateHeaderCounter();
-    loadChecklist();
+    // Initialize & refresh date when returning to the app
+    setDateToToday();
     adjustWorkoutFields();
+    window.addEventListener('focus', setDateToToday);
   </script>
 </body>
 </html>
