@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>75 Hard Tracker</title>
+  <style>
+    :root {
+      --bg: #121212;
+      --card: #1e1e1e;
+      --accent: #ff4500;
+      --text: #ffffff;
+      --muted: #a0a0a0;
+      --border: #333333;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 20px; }
+    
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      background-color: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .hamburger { font-size: 24px; background: none; border: none; color: var(--text); cursor: pointer; }
+    .counter-btn {
+      background: #2a2a2a; border: 1px solid var(--border);
+      color: var(--accent); padding: 6px 12px; border-radius: 20px;
+      font-weight: bold; font-size: 14px; cursor: pointer;
+    }
+
+    /* Sidebar Menu */
+    .drawer {
+      position: fixed; top: 0; left: -250px; width: 250px; height: 100%;
+      background: var(--card); z-index: 100; transition: 0.3s;
+      border-right: 1px solid var(--border); padding-top: 60px;
+    }
+    .drawer.open { left: 0; }
+    .drawer a {
+      display: block; padding: 16px 24px; color: var(--text);
+      text-decoration: none; border-bottom: 1px solid var(--border); font-size: 16px;
+    }
+    .overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); display: none; z-index: 99;
+    }
+    .overlay.active { display: block; }
+
+    /* Main Container */
+    .container { padding: 16px; max-width: 500px; margin: 0 auto; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* Checklist Section */
+    .card {
+      background: var(--card); border-radius: 12px;
+      padding: 16px; margin-bottom: 16px; border: 1px solid var(--border);
+    }
+    h2 { font-size: 18px; margin-bottom: 12px; }
+    .task-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .task-item:last-child { border-bottom: none; }
+    .task-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent); }
+    .task-item label { font-size: 15px; flex-grow: 1; }
+
+    /* Workout Logger Form */
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+    select, input {
+      width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; font-size: 15px;
+    }
+    .btn {
+      width: 100%; padding: 12px; background: var(--accent); border: none;
+      color: white; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 8px;
+    }
+
+    /* Dynamic Fields handling */
+    .field-hidden { display: none; }
+
+    /* Calendar & History Styles */
+    .workout-card {
+      background: #252525; padding: 12px; border-radius: 8px;
+      margin-top: 8px; font-size: 14px; border-left: 4px solid var(--accent);
+    }
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
+    .filter-chip {
+      background: #2a2a2a; border: 1px solid var(--border); color: var(--text);
+      padding: 6px 12px; border-radius: 16px; font-size: 13px; white-space: nowrap;
+    }
+    .filter-chip.active { background: var(--accent); border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <button class="hamburger" onclick="toggleMenu()">☰</button>
+    <h3 id="header-title">Day 1</h3>
+    <button class="counter-btn" id="counter-toggle" onclick="switchCounterMode()">75 Days Left</button>
+  </header>
+
+  <!-- Sidebar Nav -->
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+  <div class="drawer" id="drawer">
+    <a href="#" onclick="navigate('home')">Daily Tracker</a>
+    <a href="#" onclick="navigate('calendar')">Calendar View</a>
+    <a href="#" onclick="navigate('workouts')">Workout Logs</a>
+  </div>
+
+  <div class="container">
+    <!-- PAGE 1: DAILY TRACKER (HOME) -->
+    <div id="page-home" class="page active">
+      <div class="card">
+        <h2>Daily 75 Hard Checklist</h2>
+        <div class="task-item">
+          <input type="checkbox" id="task-photo" onchange="saveChecklist()">
+          <label for="task-photo">Progress Picture</label>
+        </div>
+        <div class="task-item">
+          <input type="checkbox" id="task-water" onchange="saveChecklist()">
+          <label for="task-water">3.8L Water</label>
+        </div>
+        <div class="task-item">
+          <input type="checkbox" id="task-read" onchange="saveChecklist()">
+          <label for="task-read">10 Pages Read (Non-Fiction)</label>
+        </div>
+        <div class="task-item">
+          <input type="checkbox" id="task-w1" onchange="saveChecklist()">
+          <label for="task-w1">45 Min Outdoor Workout</label>
+        </div>
+        <div class="task-item">
+          <input type="checkbox" id="task-w2" onchange="saveChecklist()">
+          <label for="task-w2">45 Min Indoor/Second Workout</label>
+        </div>
+      </div>
+
+      <!-- Quick Log Workout -->
+      <div class="card">
+        <h2>Log a Workout Session</h2>
+        <form id="workout-form" onsubmit="logWorkout(event)">
+          <div class="form-group">
+            <label>Workout Type</label>
+            <select id="w-type" onchange="adjustWorkoutFields()">
+              <option value="Gym/Strength">Gym / Strength</option>
+              <option value="Running">Running</option>
+              <option value="Walking">Walking</option>
+              <option value="Yoga">Yoga</option>
+              <option value="Football/Futsal">Football / Futsal</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Duration (minutes)</label>
+            <input type="number" id="w-duration" placeholder="e.g. 45" required>
+          </div>
+          <div class="form-group" id="group-distance">
+            <label>Distance (km)</label>
+            <input type="number" step="0.01" id="w-distance" placeholder="e.g. 5.2">
+          </div>
+          <div class="form-group field-hidden" id="group-weight">
+            <label>Weights / Focus Details</label>
+            <input type="text" id="w-weight" placeholder="e.g. Legs, 80kg Squats">
+          </div>
+          <button type="submit" class="btn">Save Workout Log</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- PAGE 2: CALENDAR -->
+    <div id="page-calendar" class="page">
+      <div class="card">
+        <h2>Select Date</h2>
+        <input type="date" id="calendar-picker" onchange="loadCalendarDayData()">
+      </div>
+      <div class="card" id="calendar-results">
+        <p style="color: var(--muted);">Pick a date above to inspect completed tasks and logged sessions.</p>
+      </div>
+    </div>
+
+    <!-- PAGE 3: WORKOUT LOGS -->
+    <div id="page-workouts" class="page">
+      <h2>All Logged Workouts</h2>
+      <div class="filter-bar" style="margin-top: 12px;">
+        <button class="filter-chip active" onclick="filterWorkouts('All', this)">All</button>
+        <button class="filter-chip" onclick="filterWorkouts('Running', this)">Running</button>
+        <button class="filter-chip" onclick="filterWorkouts('Gym/Strength', this)">Gym</button>
+        <button class="filter-chip" onclick="filterWorkouts('Walking', this)">Walking</button>
+        <button class="filter-chip" onclick="filterWorkouts('Yoga', this)">Yoga</button>
+        <button class="filter-chip" onclick="filterWorkouts('Football/Futsal', this)">Football</button>
+      </div>
+      <div id="workouts-list"></div>
+    </div>
+  </div>
+
+  <script>
+    // System State Setup
+    let startDate = localStorage.getItem('75_startDate');
+    if (!startDate) {
+      startDate = new Date().toISOString().split('T')[0];
+      localStorage.setItem('75_startDate', startDate);
+    }
+    
+    let counterDisplayMode = localStorage.getItem('75_counterMode') || 'left'; // 'left' or 'elapsed'
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    function calculateDayStats() {
+      const start = new Date(startDate);
+      const current = new Date(todayStr);
+      const diffDays = Math.floor((current - start) / (1000 * 60 * 60 * 24)) + 1;
+      const dayNum = Math.max(1, Math.min(diffDays, 75));
+      const daysLeft = 75 - dayNum;
+      return { dayNum, daysLeft };
+    }
+
+    function updateHeaderCounter() {
+      const { dayNum, daysLeft } = calculateDayStats();
+      const btn = document.getElementById('counter-toggle');
+      document.getElementById('header-title').innerText = `Day ${dayNum}`;
+      
+      if (counterDisplayMode === 'left') {
+        btn.innerText = `${daysLeft} Days Left`;
+      } else {
+        btn.innerText = `Day ${dayNum} / 75`;
+      }
+    }
+
+    function switchCounterMode() {
+      counterDisplayMode = counterDisplayMode === 'left' ? 'elapsed' : 'left';
+      localStorage.setItem('75_counterMode', counterDisplayMode);
+      updateHeaderCounter();
+    }
+
+    // Navigation Drawer
+    function toggleMenu() {
+      document.getElementById('drawer').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('active');
+    }
+
+    function navigate(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(`page-${pageId}`).classList.add('active');
+      toggleMenu();
+      if (pageId === 'workouts') renderAllWorkouts();
+    }
+
+    // Checklist Logic
+    function getTodayKey() { return `75_tasks_${todayStr}`; }
+
+    function loadChecklist() {
+      const data = JSON.parse(localStorage.getItem(getTodayKey()) || '{}');
+      document.getElementById('task-photo').checked = !!data.photo;
+      document.getElementById('task-water').checked = !!data.water;
+      document.getElementById('task-read').checked = !!data.read;
+      document.getElementById('task-w1').checked = !!data.w1;
+      document.getElementById('task-w2').checked = !!data.w2;
+    }
+
+    function saveChecklist() {
+      const data = {
+        photo: document.getElementById('task-photo').checked,
+        water: document.getElementById('task-water').checked,
+        read: document.getElementById('task-read').checked,
+        w1: document.getElementById('task-w1').checked,
+        w2: document.getElementById('task-w2').checked,
+      };
+      localStorage.setItem(getTodayKey(), JSON.stringify(data));
+    }
+
+    // Dynamic Form Fields
+    function adjustWorkoutFields() {
+      const type = document.getElementById('w-type').value;
+      const distGroup = document.getElementById('group-distance');
+      const weightGroup = document.getElementById('group-weight');
+
+      if (type === 'Gym/Strength') {
+        distGroup.classList.add('field-hidden');
+        weightGroup.classList.remove('field-hidden');
+      } else if (type === 'Running' || type === 'Walking') {
+        distGroup.classList.remove('field-hidden');
+        weightGroup.classList.add('field-hidden');
+      } else {
+        distGroup.classList.add('field-hidden');
+        weightGroup.classList.add('field-hidden');
+      }
+    }
+
+    // Workout Data Persistence
+    function getWorkouts() {
+      return JSON.parse(localStorage.getItem('75_workouts') || '[]');
+    }
+
+    function logWorkout(e) {
+      e.preventDefault();
+      const type = document.getElementById('w-type').value;
+      const duration = document.getElementById('w-duration').value;
+      const distance = document.getElementById('w-distance').value;
+      const weight = document.getElementById('w-weight').value;
+
+      const newLog = {
+        id: Date.now(),
+        date: todayStr,
+        type,
+        duration: duration + ' mins',
+        extra: distance ? `${distance} km` : (weight || '')
+      };
+
+      const logs = getWorkouts();
+      logs.unshift(newLog);
+      localStorage.setItem('75_workouts', JSON.stringify(logs));
+
+      document.getElementById('workout-form').reset();
+      adjustWorkoutFields();
+      alert('Workout Logged!');
+    }
+
+    // Workout List Render & Filtering
+    function renderAllWorkouts(filter = 'All') {
+      const logs = getWorkouts();
+      const listEl = document.getElementById('workouts-list');
+      listEl.innerHTML = '';
+
+      const filtered = filter === 'All' ? logs : logs.filter(l => l.type === filter);
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<p style="color: var(--muted); margin-top: 12px;">No logged workouts found.</p>';
+        return;
+      }
+
+      filtered.forEach(item => {
+        listEl.innerHTML += `
+          <div class="workout-card">
+            <strong>${item.type}</strong> — ${item.date}<br>
+            <span style="color: var(--muted);">Duration: ${item.duration} ${item.extra ? '| ' + item.extra : ''}</span>
+          </div>
+        `;
+      });
+    }
+
+    function filterWorkouts(category, btn) {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      renderAllWorkouts(category);
+    }
+
+    // Calendar Inspection
+    function loadCalendarDayData() {
+      const selectedDate = document.getElementById('calendar-picker').value;
+      if (!selectedDate) return;
+
+      const tasks = JSON.parse(localStorage.getItem(`75_tasks_${selectedDate}`) || '{}');
+      const allWorkouts = getWorkouts().filter(w => w.date === selectedDate);
+      const resEl = document.getElementById('calendar-results');
+
+      let html = `<h3 style="margin-bottom:8px;">Logs for ${selectedDate}</h3>`;
+      html += `<strong>Daily Checklist:</strong><ul style="margin: 8px 0 16px 20px; font-size:14px;">`;
+      html += `<li>Progress Photo: ${tasks.photo ? '✓' : '✗'}</li>`;
+      html += `<li>3.8L Water: ${tasks.water ? '✓' : '✗'}</li>`;
+      html += `<li>10 Pages Read: ${tasks.read ? '✓' : '✗'}</li>`;
+      html += `<li>Outdoor Workout: ${tasks.w1 ? '✓' : '✗'}</li>`;
+      html += `<li>Indoor Workout: ${tasks.w2 ? '✓' : '✗'}</li></ul>`;
+
+      html += `<strong>Logged Sessions (${allWorkouts.length}):</strong>`;
+      if (allWorkouts.length === 0) {
+        html += `<p style="font-size:13px; color:var(--muted);">No specific workouts recorded.</p>`;
+      } else {
+        allWorkouts.forEach(w => {
+          html += `<div class="workout-card"><strong>${w.type}</strong> - ${w.duration} ${w.extra ? ' (' + w.extra + ')' : ''}</div>`;
+        });
+      }
+
+      resEl.innerHTML = html;
+    }
+
+    // Initial load call
+    updateHeaderCounter();
+    loadChecklist();
+    adjustWorkoutFields();
+  </script>
+</body>
+</html>
