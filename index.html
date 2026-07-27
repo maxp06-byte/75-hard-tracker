@@ -18,22 +18,17 @@
     
     /* Header */
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px;
-      background-color: var(--card);
-      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px; background-color: var(--card); border-bottom: 1px solid var(--border);
       position: sticky; top: 0; z-index: 10;
     }
     .hamburger { font-size: 24px; background: none; border: none; color: var(--text); cursor: pointer; }
     .counter-btn {
-      background: #2a2a2a; border: 1px solid var(--border);
-      color: var(--accent); padding: 6px 12px; border-radius: 20px;
-      font-weight: bold; font-size: 14px; cursor: pointer;
+      background: #2a2a2a; border: 1px solid var(--border); color: var(--accent);
+      padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;
     }
 
-    /* Sidebar Menu */
+    /* Sidebar Drawer */
     .drawer {
       position: fixed; top: 0; left: -250px; width: 250px; height: 100%;
       background: var(--card); z-index: 100; transition: 0.3s;
@@ -55,74 +50,85 @@
     .page { display: none; }
     .page.active { display: block; }
 
-    /* Checklist Section */
-    .card {
-      background: var(--card); border-radius: 12px;
-      padding: 16px; margin-bottom: 16px; border: 1px solid var(--border);
-    }
+    /* Cards & Checklist */
+    .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border); }
     h2 { font-size: 18px; margin-bottom: 12px; }
-    .task-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 0; border-bottom: 1px solid var(--border);
-    }
+    .date-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; background: #2a2a2a; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); }
+    .date-bar label { margin: 0; font-size: 13px; color: var(--muted); }
+    .date-bar input { width: auto; background: transparent; border: none; color: var(--text); font-weight: bold; font-size: 14px; text-align: right; }
+
+    .task-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
     .task-item:last-child { border-bottom: none; }
     .task-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent); }
     .task-item label { font-size: 15px; flex-grow: 1; }
 
-    /* Workout Logger Form */
+    /* Photo Upload */
+    .file-input { display: none; }
+    .upload-btn {
+      display: inline-block; padding: 8px 14px; background: #2a2a2a; border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; font-size: 13px; cursor: pointer; text-align: center;
+    }
+    .photo-preview { width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px; margin-top: 10px; display: none; }
+
+    /* Form Fields */
     .form-group { margin-bottom: 12px; }
     label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-    select, input {
-      width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid var(--border);
-      color: var(--text); border-radius: 8px; font-size: 15px;
-    }
-    .btn {
-      width: 100%; padding: 12px; background: var(--accent); border: none;
-      color: white; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 8px;
-    }
-
-    /* Dynamic Fields handling */
+    select, input { width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 15px; }
+    .btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 8px; }
     .field-hidden { display: none; }
 
-    /* Calendar & History Styles */
-    .workout-card {
-      background: #252525; padding: 12px; border-radius: 8px;
-      margin-top: 8px; font-size: 14px; border-left: 4px solid var(--accent);
-    }
+    /* Photo Gallery Grid */
+    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+    .gallery-item { background: #252525; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); text-align: center; }
+    .gallery-item img { width: 100%; height: 110px; object-fit: cover; display: block; }
+    .gallery-item span { display: block; font-size: 11px; padding: 4px; color: var(--muted); }
+
+    /* Logs & Filters */
+    .workout-card { background: #252525; padding: 12px; border-radius: 8px; margin-top: 8px; font-size: 14px; border-left: 4px solid var(--accent); }
     .filter-bar { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
-    .filter-chip {
-      background: #2a2a2a; border: 1px solid var(--border); color: var(--text);
-      padding: 6px 12px; border-radius: 16px; font-size: 13px; white-space: nowrap;
-    }
+    .filter-chip { background: #2a2a2a; border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 16px; font-size: 13px; white-space: nowrap; }
     .filter-chip.active { background: var(--accent); border-color: var(--accent); }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
   <header>
     <button class="hamburger" onclick="toggleMenu()">☰</button>
     <h3 id="header-title">Day 1</h3>
     <button class="counter-btn" id="counter-toggle" onclick="switchCounterMode()">75 Days Left</button>
   </header>
 
-  <!-- Sidebar Nav -->
   <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
   <div class="drawer" id="drawer">
     <a href="#" onclick="navigate('home')">Daily Tracker</a>
+    <a href="#" onclick="navigate('gallery')">Progress Photos (75)</a>
     <a href="#" onclick="navigate('calendar')">Calendar View</a>
     <a href="#" onclick="navigate('workouts')">Workout Logs</a>
   </div>
 
   <div class="container">
-    <!-- PAGE 1: DAILY TRACKER (HOME) -->
+    <!-- PAGE 1: DAILY TRACKER -->
     <div id="page-home" class="page active">
       <div class="card">
-        <h2>Daily 75 Hard Checklist</h2>
-        <div class="task-item">
-          <input type="checkbox" id="task-photo" onchange="saveChecklist()">
-          <label for="task-photo">Progress Picture</label>
+        <!-- Editable Date Switcher -->
+        <div class="date-bar">
+          <label>Logging For Date:</label>
+          <input type="date" id="tracker-date-picker" onchange="changeTrackerDate()">
         </div>
+
+        <h2>Daily Checklist</h2>
+        
+        <!-- Progress Photo Task -->
+        <div class="task-item" style="flex-direction: column; align-items: flex-start;">
+          <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+            <input type="checkbox" id="task-photo" onchange="saveChecklist()">
+            <label for="task-photo">Progress Picture</label>
+            <label for="photo-file" class="upload-btn">📷 Upload</label>
+            <input type="file" id="photo-file" class="file-input" accept="image/*" onchange="handlePhotoUpload(event)">
+          </div>
+          <img id="today-photo-preview" class="photo-preview" alt="Progress Photo Preview">
+        </div>
+
         <div class="task-item">
           <input type="checkbox" id="task-water" onchange="saveChecklist()">
           <label for="task-water">3.8L Water</label>
@@ -173,18 +179,25 @@
       </div>
     </div>
 
-    <!-- PAGE 2: CALENDAR -->
+    <!-- PAGE 2: PHOTO GALLERY -->
+    <div id="page-gallery" class="page">
+      <h2>Progress Photo Gallery</h2>
+      <p style="color: var(--muted); font-size:13px; margin-top:4px;">All uploaded progress pictures across your 75 days.</p>
+      <div class="gallery-grid" id="gallery-container"></div>
+    </div>
+
+    <!-- PAGE 3: CALENDAR -->
     <div id="page-calendar" class="page">
       <div class="card">
         <h2>Select Date</h2>
         <input type="date" id="calendar-picker" onchange="loadCalendarDayData()">
       </div>
       <div class="card" id="calendar-results">
-        <p style="color: var(--muted);">Pick a date above to inspect completed tasks and logged sessions.</p>
+        <p style="color: var(--muted);">Pick a date above to inspect completed tasks, photos, and logged sessions.</p>
       </div>
     </div>
 
-    <!-- PAGE 3: WORKOUT LOGS -->
+    <!-- PAGE 4: WORKOUT LOGS -->
     <div id="page-workouts" class="page">
       <h2>All Logged Workouts</h2>
       <div class="filter-bar" style="margin-top: 12px;">
@@ -200,19 +213,18 @@
   </div>
 
   <script>
-    // System State Setup
     let startDate = localStorage.getItem('75_startDate');
     if (!startDate) {
       startDate = new Date().toISOString().split('T')[0];
       localStorage.setItem('75_startDate', startDate);
     }
     
-    let counterDisplayMode = localStorage.getItem('75_counterMode') || 'left'; // 'left' or 'elapsed'
-    const todayStr = new Date().toISOString().split('T')[0];
+    let counterDisplayMode = localStorage.getItem('75_counterMode') || 'left';
+    let activeLogDate = new Date().toISOString().split('T')[0];
 
     function calculateDayStats() {
       const start = new Date(startDate);
-      const current = new Date(todayStr);
+      const current = new Date(activeLogDate);
       const diffDays = Math.floor((current - start) / (1000 * 60 * 60 * 24)) + 1;
       const dayNum = Math.max(1, Math.min(diffDays, 75));
       const daysLeft = 75 - dayNum;
@@ -223,12 +235,7 @@
       const { dayNum, daysLeft } = calculateDayStats();
       const btn = document.getElementById('counter-toggle');
       document.getElementById('header-title').innerText = `Day ${dayNum}`;
-      
-      if (counterDisplayMode === 'left') {
-        btn.innerText = `${daysLeft} Days Left`;
-      } else {
-        btn.innerText = `Day ${dayNum} / 75`;
-      }
+      btn.innerText = counterDisplayMode === 'left' ? `${daysLeft} Days Left` : `Day ${dayNum} / 75`;
     }
 
     function switchCounterMode() {
@@ -237,7 +244,12 @@
       updateHeaderCounter();
     }
 
-    // Navigation Drawer
+    function changeTrackerDate() {
+      activeLogDate = document.getElementById('tracker-date-picker').value;
+      updateHeaderCounter();
+      loadChecklist();
+    }
+
     function toggleMenu() {
       document.getElementById('drawer').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('active');
@@ -248,18 +260,70 @@
       document.getElementById(`page-${pageId}`).classList.add('active');
       toggleMenu();
       if (pageId === 'workouts') renderAllWorkouts();
+      if (pageId === 'gallery') renderGallery();
     }
 
-    // Checklist Logic
-    function getTodayKey() { return `75_tasks_${todayStr}`; }
+    function getTaskKey() { return `75_tasks_${activeLogDate}`; }
+
+    // Photo Compression & Handling
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 600;
+
+          if (width > height && width > maxDim) {
+            height *= maxDim / width;
+            width = maxDim;
+          } else if (height > maxDim) {
+            width *= maxDim / height;
+            height = maxDim;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+          localStorage.setItem(`75_photo_${activeLogDate}`, compressedDataUrl);
+          document.getElementById('task-photo').checked = true;
+          saveChecklist();
+
+          const preview = document.getElementById('today-photo-preview');
+          preview.src = compressedDataUrl;
+          preview.style.display = 'block';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
 
     function loadChecklist() {
-      const data = JSON.parse(localStorage.getItem(getTodayKey()) || '{}');
+      const data = JSON.parse(localStorage.getItem(getTaskKey()) || '{}');
       document.getElementById('task-photo').checked = !!data.photo;
       document.getElementById('task-water').checked = !!data.water;
       document.getElementById('task-read').checked = !!data.read;
       document.getElementById('task-w1').checked = !!data.w1;
       document.getElementById('task-w2').checked = !!data.w2;
+
+      const savedPhoto = localStorage.getItem(`75_photo_${activeLogDate}`);
+      const preview = document.getElementById('today-photo-preview');
+      if (savedPhoto) {
+        preview.src = savedPhoto;
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+        preview.src = '';
+      }
     }
 
     function saveChecklist() {
@@ -270,10 +334,35 @@
         w1: document.getElementById('task-w1').checked,
         w2: document.getElementById('task-w2').checked,
       };
-      localStorage.setItem(getTodayKey(), JSON.stringify(data));
+      localStorage.setItem(getTaskKey(), JSON.stringify(data));
     }
 
-    // Dynamic Form Fields
+    function renderGallery() {
+      const gallery = document.getElementById('gallery-container');
+      gallery.innerHTML = '';
+
+      let found = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('75_photo_')) {
+          const date = key.replace('75_photo_', '');
+          const imgUrl = localStorage.getItem(key);
+          found++;
+
+          gallery.innerHTML += `
+            <div class="gallery-item">
+              <img src="${imgUrl}" alt="Progress ${date}">
+              <span>${date}</span>
+            </div>
+          `;
+        }
+      }
+
+      if (found === 0) {
+        gallery.innerHTML = '<p style="color:var(--muted); grid-column: 1/-1;">No progress pictures uploaded yet!</p>';
+      }
+    }
+
     function adjustWorkoutFields() {
       const type = document.getElementById('w-type').value;
       const distGroup = document.getElementById('group-distance');
@@ -291,7 +380,6 @@
       }
     }
 
-    // Workout Data Persistence
     function getWorkouts() {
       return JSON.parse(localStorage.getItem('75_workouts') || '[]');
     }
@@ -305,7 +393,7 @@
 
       const newLog = {
         id: Date.now(),
-        date: todayStr,
+        date: activeLogDate,
         type,
         duration: duration + ' mins',
         extra: distance ? `${distance} km` : (weight || '')
@@ -317,10 +405,9 @@
 
       document.getElementById('workout-form').reset();
       adjustWorkoutFields();
-      alert('Workout Logged!');
+      alert(`Workout Logged for ${activeLogDate}!`);
     }
 
-    // Workout List Render & Filtering
     function renderAllWorkouts(filter = 'All') {
       const logs = getWorkouts();
       const listEl = document.getElementById('workouts-list');
@@ -349,16 +436,21 @@
       renderAllWorkouts(category);
     }
 
-    // Calendar Inspection
     function loadCalendarDayData() {
       const selectedDate = document.getElementById('calendar-picker').value;
       if (!selectedDate) return;
 
       const tasks = JSON.parse(localStorage.getItem(`75_tasks_${selectedDate}`) || '{}');
+      const photo = localStorage.getItem(`75_photo_${selectedDate}`);
       const allWorkouts = getWorkouts().filter(w => w.date === selectedDate);
       const resEl = document.getElementById('calendar-results');
 
       let html = `<h3 style="margin-bottom:8px;">Logs for ${selectedDate}</h3>`;
+      
+      if (photo) {
+        html += `<img src="${photo}" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px; margin-bottom:12px;">`;
+      }
+
       html += `<strong>Daily Checklist:</strong><ul style="margin: 8px 0 16px 20px; font-size:14px;">`;
       html += `<li>Progress Photo: ${tasks.photo ? '✓' : '✗'}</li>`;
       html += `<li>3.8L Water: ${tasks.water ? '✓' : '✗'}</li>`;
@@ -378,7 +470,8 @@
       resEl.innerHTML = html;
     }
 
-    // Initial load call
+    // Init Date Selector to Today
+    document.getElementById('tracker-date-picker').value = activeLogDate;
     updateHeaderCounter();
     loadChecklist();
     adjustWorkoutFields();
