@@ -83,8 +83,18 @@
     .gallery-item img { width: 100%; height: 110px; object-fit: cover; display: block; }
     .gallery-item span { display: block; font-size: 11px; padding: 4px; color: var(--muted); }
 
-    /* Logs & Filters */
-    .workout-card { background: #252525; padding: 12px; border-radius: 8px; margin-top: 8px; font-size: 14px; border-left: 4px solid var(--accent); }
+    /* Workout Cards with Delete Action */
+    .workout-card { 
+      background: #252525; padding: 12px; border-radius: 8px; margin-top: 8px; 
+      font-size: 14px; border-left: 4px solid var(--accent);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .delete-btn {
+      background: none; border: none; color: #ff5555; font-size: 18px; 
+      cursor: pointer; padding: 4px 8px;
+    }
+
+    /* Filters */
     .filter-bar { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
     .filter-chip { background: #2a2a2a; border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 16px; font-size: 13px; white-space: nowrap; }
     .filter-chip.active { background: var(--accent); border-color: var(--accent); }
@@ -110,7 +120,6 @@
     <!-- PAGE 1: DAILY TRACKER -->
     <div id="page-home" class="page active">
       <div class="card">
-        <!-- Editable Date Switcher -->
         <div class="date-bar">
           <label>Logging For Date:</label>
           <input type="date" id="tracker-date-picker" onchange="changeTrackerDate()">
@@ -118,7 +127,6 @@
 
         <h2>Daily Checklist</h2>
         
-        <!-- Progress Photo Task -->
         <div class="task-item" style="flex-direction: column; align-items: flex-start;">
           <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
             <input type="checkbox" id="task-photo" onchange="saveChecklist()">
@@ -221,6 +229,7 @@
     
     let counterDisplayMode = localStorage.getItem('75_counterMode') || 'left';
     let activeLogDate = new Date().toISOString().split('T')[0];
+    let currentFilter = 'All';
 
     function calculateDayStats() {
       const start = new Date(startDate);
@@ -259,13 +268,12 @@
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(`page-${pageId}`).classList.add('active');
       toggleMenu();
-      if (pageId === 'workouts') renderAllWorkouts();
+      if (pageId === 'workouts') renderAllWorkouts(currentFilter);
       if (pageId === 'gallery') renderGallery();
     }
 
     function getTaskKey() { return `75_tasks_${activeLogDate}`; }
 
-    // Photo Compression & Handling
     function handlePhotoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -408,7 +416,23 @@
       alert(`Workout Logged for ${activeLogDate}!`);
     }
 
+    // Delete Logged Workout Function
+    function deleteWorkout(id) {
+      if (!confirm("Are you sure you want to delete this workout log?")) return;
+      
+      let logs = getWorkouts();
+      logs = logs.filter(w => w.id !== id);
+      localStorage.setItem('75_workouts', JSON.stringify(logs));
+
+      // Refresh current views
+      renderAllWorkouts(currentFilter);
+      if (document.getElementById('calendar-picker').value) {
+        loadCalendarDayData();
+      }
+    }
+
     function renderAllWorkouts(filter = 'All') {
+      currentFilter = filter;
       const logs = getWorkouts();
       const listEl = document.getElementById('workouts-list');
       listEl.innerHTML = '';
@@ -423,8 +447,11 @@
       filtered.forEach(item => {
         listEl.innerHTML += `
           <div class="workout-card">
-            <strong>${item.type}</strong> — ${item.date}<br>
-            <span style="color: var(--muted);">Duration: ${item.duration} ${item.extra ? '| ' + item.extra : ''}</span>
+            <div>
+              <strong>${item.type}</strong> — ${item.date}<br>
+              <span style="color: var(--muted);">Duration: ${item.duration} ${item.extra ? '| ' + item.extra : ''}</span>
+            </div>
+            <button class="delete-btn" onclick="deleteWorkout(${item.id})" title="Delete entry">🗑️</button>
           </div>
         `;
       });
@@ -463,14 +490,19 @@
         html += `<p style="font-size:13px; color:var(--muted);">No specific workouts recorded.</p>`;
       } else {
         allWorkouts.forEach(w => {
-          html += `<div class="workout-card"><strong>${w.type}</strong> - ${w.duration} ${w.extra ? ' (' + w.extra + ')' : ''}</div>`;
+          html += `
+            <div class="workout-card">
+              <div>
+                <strong>${w.type}</strong> - ${w.duration} ${w.extra ? ' (' + w.extra + ')' : ''}
+              </div>
+              <button class="delete-btn" onclick="deleteWorkout(${w.id})" title="Delete entry">🗑️</button>
+            </div>`;
         });
       }
 
       resEl.innerHTML = html;
     }
 
-    // Init Date Selector to Today
     document.getElementById('tracker-date-picker').value = activeLogDate;
     updateHeaderCounter();
     loadChecklist();
