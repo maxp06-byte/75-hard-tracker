@@ -266,14 +266,19 @@
     let activeLogDate = new Date().toISOString().split('T')[0];
     let currentFilter = 'All';
 
-    function setDateToToday() {
-      activeLogDate = new Date().toISOString().split('T')[0];
+   function setDateToToday() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      
+      activeLogDate = `${year}-${month}-${day}`;
+
       const picker = document.getElementById('tracker-date-picker');
       if (picker) picker.value = activeLogDate;
       updateHeaderCounter();
       loadChecklist();
     }
-
     function calculateDayStats() {
       const start = new Date(startDate);
       const current = new Date(activeLogDate);
