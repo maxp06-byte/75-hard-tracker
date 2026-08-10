@@ -124,6 +124,7 @@
     <a href="#" onclick="navigate('gallery')">Progress Photos (75)</a>
     <a href="#" onclick="navigate('calendar')">Calendar View</a>
     <a href="#" onclick="navigate('workouts')">Workout Logs</a>
+    <a href="#" onclick="exportDataToCSV()" style="color: var(--accent); font-weight: bold;">📥 Export Backup to CSV</a>
   </div>
 
   <div class="container">
@@ -325,7 +326,54 @@
     function handlePhotoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
+function exportDataToCSV() {
+      const workouts = getWorkouts();
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Date,Day Number,Type,Duration,Details/Distance,Photo Taken,Water Completed,Read Completed,Outdoor W1,Indoor W2\n";
 
+      // Collect all keys from localStorage to capture every logged date
+      const allDates = new Set();
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('75_tasks_') || key.startsWith('75_photo_')) {
+          allDates.add(key.replace('75_tasks_', '').replace('75_photo_', ''));
+        }
+      }
+      workouts.forEach(w => allDates.add(w.date));
+
+      const sortedDates = Array.from(allDates).sort();
+
+      sortedDates.forEach(date => {
+        const start = new Date(startDate);
+        const logDate = new Date(date);
+        const diffDays = Math.floor((logDate - start) / (1000 * 60 * 60 * 24)) + 1;
+        const dayNum = Math.max(1, Math.min(diffDays, 75));
+
+        const tasks = JSON.parse(localStorage.getItem(`75_tasks_${date}`) || '{}');
+        const hasPhoto = localStorage.getItem(`75_photo_${date}`) ? "Yes" : "No";
+
+        const dayWorkouts = workouts.filter(w => w.date === date);
+
+        if (dayWorkouts.length > 0) {
+          dayWorkouts.forEach(w => {
+            const type = `"${(w.type || '').replace(/"/g, '""')}"`;
+            const duration = `"${(w.duration || '').replace(/"/g, '""')}"`;
+            const extra = `"${(w.extra || '').replace(/"/g, '""')}"`;
+            csvContent += `${date},Day ${dayNum},${type},${duration},${extra},${hasPhoto},${tasks.water ? "Yes":"No"},${tasks.read ? "Yes":"No"},${tasks.w1 ? "Yes":"No"},${tasks.w2 ? "Yes":"No"}\n`;
+          });
+        } else {
+          csvContent += `${date},Day ${dayNum},"None","0 mins","None",${hasPhoto},${tasks.water ? "Yes":"No"},${tasks.read ? "Yes":"No"},${tasks.w1 ? "Yes":"No"},${tasks.w2 ? "Yes":"No"}\n`;
+        }
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `75_Hard_Backup_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
       // Force targetDate to match the input value explicitly, avoiding page-state resets
       const dateInput = document.getElementById('tracker-date-picker');
       const targetDate = dateInput ? dateInput.value : activeLogDate;
