@@ -326,6 +326,10 @@
       const file = event.target.files[0];
       if (!file) return;
 
+      // Force targetDate to match the input value explicitly, avoiding page-state resets
+      const dateInput = document.getElementById('tracker-date-picker');
+      const targetDate = dateInput ? dateInput.value : activeLogDate;
+
       const reader = new FileReader();
       reader.onload = function(e) {
         const img = new Image();
@@ -350,13 +354,16 @@
 
           const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
-          localStorage.setItem(`75_photo_${activeLogDate}`, compressedDataUrl);
-          document.getElementById('task-photo').checked = true;
-          saveChecklist();
+          // Save directly to the date picked in the input field
+          localStorage.setItem(`75_photo_${targetDate}`, compressedDataUrl);
+          
+          // Ensure we update the tasks object for that specific date
+          const tasks = JSON.parse(localStorage.getItem(`75_tasks_${targetDate}`) || '{}');
+          tasks.photo = true;
+          localStorage.setItem(`75_tasks_${targetDate}`, JSON.stringify(tasks));
 
-          const preview = document.getElementById('today-photo-preview');
-          preview.src = compressedDataUrl;
-          preview.style.display = 'block';
+          // Reload the current view so UI checkboxes and previews accurately reflect targetDate
+          loadChecklist();
         };
         img.src = e.target.result;
       };
