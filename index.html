@@ -124,7 +124,7 @@
     <a href="#" onclick="navigate('gallery')">Progress Photos (75)</a>
     <a href="#" onclick="navigate('calendar')">Calendar View</a>
     <a href="#" onclick="navigate('workouts')">Workout Logs</a>
-    <a href="#" onclick="exportDataToCSV()" style="color: var(--accent); font-weight: bold;"> Export Backup to CSV</a>
+    <a href="#" onclick="exportDataToCSV()" style="color: var(--accent); font-weight: bold;">Export Backup to CSV</a>
   </div>
 
   <div class="container">
@@ -241,7 +241,7 @@
   </div>
 
   <script>
-    // Generate Manifest dynamically so Chrome installs it standalone
+    // Generate Manifest dynamically
     const manifestData = {
       name: "75 Hard Tracker",
       short_name: "75 Hard",
@@ -262,25 +262,23 @@
     }
     
     let counterDisplayMode = localStorage.getItem('75_counterMode') || 'left';
-    
-    // Always default active log date to actual current date
     let activeLogDate = new Date().toISOString().split('T')[0];
     let currentFilter = 'All';
 
-  function setDateToToday() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
+    function setDateToToday() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
 
-  activeLogDate = `${year}-${month}-${day}`;
+      activeLogDate = `${year}-${month}-${day}`;
 
-  const picker = document.getElementById('tracker-date-picker');
-  if (picker) picker.value = activeLogDate;
-  updateHeaderCounter();
-  loadChecklist();
-}
+      const picker = document.getElementById('tracker-date-picker');
+      if (picker) picker.value = activeLogDate;
+      updateHeaderCounter();
+      loadChecklist();
     }
+
     function calculateDayStats() {
       const start = new Date(startDate);
       const current = new Date(activeLogDate);
@@ -304,13 +302,13 @@
     }
 
     function changeTrackerDate() {
-  const picker = document.getElementById('tracker-date-picker');
-  if (picker && picker.value) {
-    activeLogDate = picker.value;
-    updateHeaderCounter();
-    loadChecklist();
-  }
-}
+      const picker = document.getElementById('tracker-date-picker');
+      if (picker && picker.value) {
+        activeLogDate = picker.value;
+        updateHeaderCounter();
+        loadChecklist();
+      }
+    }
 
     function toggleMenu() {
       document.getElementById('drawer').classList.toggle('open');
@@ -327,56 +325,53 @@
 
     function getTaskKey() { return `75_tasks_${activeLogDate}`; }
 
-   // FUNCTION 1: Image upload
-function handlePhotoUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-  const dateInput = document.getElementById('tracker-date-picker');
-  const targetDate = dateInput ? dateInput.value : activeLogDate;
+      const dateInput = document.getElementById('tracker-date-picker');
+      const targetDate = dateInput ? dateInput.value : activeLogDate;
 
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      let width = img.width;
-      let height = img.height;
-      const maxDim = 600;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 600;
 
-      if (width > height && width > maxDim) {
-        height *= maxDim / width;
-        width = maxDim;
-      } else if (height > maxDim) {
-        width *= maxDim / height;
-        height = maxDim;
-      }
+          if (width > height && width > maxDim) {
+            height *= maxDim / width;
+            width = maxDim;
+          } else if (height > maxDim) {
+            width *= maxDim / height;
+            height = maxDim;
+          }
 
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
 
-      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
-      localStorage.setItem(`75_photo_${targetDate}`, compressedDataUrl);
+          localStorage.setItem(`75_photo_${targetDate}`, compressedDataUrl);
 
-      const tasks = JSON.parse(localStorage.getItem(`75_tasks_${targetDate}`) || '{}');
-      tasks.photo = true;
-      localStorage.setItem(`75_tasks_${targetDate}`, JSON.stringify(tasks));
+          const tasks = JSON.parse(localStorage.getItem(`75_tasks_${targetDate}`) || '{}');
+          tasks.photo = true;
+          localStorage.setItem(`75_tasks_${targetDate}`, JSON.stringify(tasks));
 
-      // Lock global active date to targetDate
-      activeLogDate = targetDate;
-      if (dateInput) dateInput.value = targetDate;
+          activeLogDate = targetDate;
+          if (dateInput) dateInput.value = targetDate;
 
-      loadChecklist();
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
+          loadChecklist();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
 
-    // FUNCTION 2: CSV export
     function exportDataToCSV() {
       const workouts = getWorkouts();
       let csvContent = "data:text/csv;charset=utf-8,";
@@ -423,93 +418,6 @@ function handlePhotoUpload(event) {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    }
-
-      // Collect all keys from localStorage to capture every logged date
-      const allDates = new Set();
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith('75_tasks_') || key.startsWith('75_photo_')) {
-          allDates.add(key.replace('75_tasks_', '').replace('75_photo_', ''));
-        }
-      }
-      workouts.forEach(w => allDates.add(w.date));
-
-      const sortedDates = Array.from(allDates).sort();
-
-      sortedDates.forEach(date => {
-        const start = new Date(startDate);
-        const logDate = new Date(date);
-        const diffDays = Math.floor((logDate - start) / (1000 * 60 * 60 * 24)) + 1;
-        const dayNum = Math.max(1, Math.min(diffDays, 75));
-
-        const tasks = JSON.parse(localStorage.getItem(`75_tasks_${date}`) || '{}');
-        const hasPhoto = localStorage.getItem(`75_photo_${date}`) ? "Yes" : "No";
-
-        const dayWorkouts = workouts.filter(w => w.date === date);
-
-        if (dayWorkouts.length > 0) {
-          dayWorkouts.forEach(w => {
-            const type = `"${(w.type || '').replace(/"/g, '""')}"`;
-            const duration = `"${(w.duration || '').replace(/"/g, '""')}"`;
-            const extra = `"${(w.extra || '').replace(/"/g, '""')}"`;
-            csvContent += `${date},Day ${dayNum},${type},${duration},${extra},${hasPhoto},${tasks.water ? "Yes":"No"},${tasks.read ? "Yes":"No"},${tasks.w1 ? "Yes":"No"},${tasks.w2 ? "Yes":"No"}\n`;
-          });
-        } else {
-          csvContent += `${date},Day ${dayNum},"None","0 mins","None",${hasPhoto},${tasks.water ? "Yes":"No"},${tasks.read ? "Yes":"No"},${tasks.w1 ? "Yes":"No"},${tasks.w2 ? "Yes":"No"}\n`;
-        }
-      });
-
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `75_Hard_Backup_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-      // Force targetDate to match the input value explicitly, avoiding page-state resets
-      const dateInput = document.getElementById('tracker-date-picker');
-      const targetDate = dateInput ? dateInput.value : activeLogDate;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          const maxDim = 600;
-
-          if (width > height && width > maxDim) {
-            height *= maxDim / width;
-            width = maxDim;
-          } else if (height > maxDim) {
-            width *= maxDim / height;
-            height = maxDim;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-
-          // Save directly to the date picked in the input field
-          localStorage.setItem(`75_photo_${targetDate}`, compressedDataUrl);
-          
-          // Ensure we update the tasks object for that specific date
-          const tasks = JSON.parse(localStorage.getItem(`75_tasks_${targetDate}`) || '{}');
-          tasks.photo = true;
-          localStorage.setItem(`75_tasks_${targetDate}`, JSON.stringify(tasks));
-
-          // Reload the current view so UI checkboxes and previews accurately reflect targetDate
-          loadChecklist();
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
     }
 
     function loadChecklist() {
@@ -576,7 +484,7 @@ function handlePhotoUpload(event) {
       if (type === 'Gym/Strength') {
         distGroup.classList.add('field-hidden');
         weightGroup.classList.remove('field-hidden');
-      } else if (type === 'Running' || type === 'Walking'|| type === 'Cycling' || type === 'eBike' || type === 'Hiking' || type === 'Swimming') {
+      } else if (['Running', 'Walking', 'Cycling', 'eBike', 'Hiking', 'Swimming'].includes(type)) {
         distGroup.classList.remove('field-hidden');
         weightGroup.classList.add('field-hidden');
       } else {
@@ -698,11 +606,9 @@ function handlePhotoUpload(event) {
       resEl.innerHTML = html;
     }
 
-    // Initialize & refresh date when returning to the app
     // Initialize on page load
     setDateToToday();
     adjustWorkoutFields();
-    
   </script>
 </body>
 </html>
