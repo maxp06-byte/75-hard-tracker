@@ -154,7 +154,7 @@
         </div>
         <div class="task-item">
           <input type="checkbox" id="task-read" onchange="saveChecklist()">
-          <label for="task-read">10 Pages Read (Non-Fiction)</label>
+          <label for="task-read">10 Pages Read</label>
         </div>
         <div class="task-item">
           <input type="checkbox" id="task-w1" onchange="saveChecklist()">
@@ -180,7 +180,7 @@
               <option value="Football/Futsal">Football / Futsal</option>
               <option value="Cycling">Cycling</option>
               <option value="eBike">eBike</option>
-              <option value="Breathwork">Breathwork</option>
+              <option value="Breathwork">Stretching</option>
               <option value="Swimming">Swimming</option>
               <option value="Hiking">Hiking</option>
             </select>
@@ -323,13 +323,111 @@
 
     function getTaskKey() { return `75_tasks_${activeLogDate}`; }
 
+    // FUNCTION 1: Image upload
+function handlePhotoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const dateInput = document.getElementById('tracker-date-picker');
+  const targetDate = dateInput ? dateInput.value : activeLogDate;
+
+  // FUNCTION 1: Image upload
     function handlePhotoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
-function exportDataToCSV() {
+
+      const dateInput = document.getElementById('tracker-date-picker');
+      const targetDate = dateInput ? dateInput.value : activeLogDate;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 600;
+
+          if (width > height && width > maxDim) {
+            height *= maxDim / width;
+            width = maxDim;
+          } else if (height > maxDim) {
+            width *= maxDim / height;
+            height = maxDim;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+          localStorage.setItem(`75_photo_${targetDate}`, compressedDataUrl);
+          
+          const tasks = JSON.parse(localStorage.getItem(`75_tasks_${targetDate}`) || '{}');
+          tasks.photo = true;
+          localStorage.setItem(`75_tasks_${targetDate}`, JSON.stringify(tasks));
+
+          // Lock global active date to targetDate
+          activeLogDate = targetDate;
+          if (dateInput) dateInput.value = targetDate;
+
+          loadChecklist();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // FUNCTION 2: CSV export
+    function exportDataToCSV() {
       const workouts = getWorkouts();
       let csvContent = "data:text/csv;charset=utf-8,";
       csvContent += "Date,Day Number,Type,Duration,Details/Distance,Photo Taken,Water Completed,Read Completed,Outdoor W1,Indoor W2\n";
+
+      const allDates = new Set();
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('75_tasks_') || key.startsWith('75_photo_')) {
+          allDates.add(key.replace('75_tasks_', '').replace('75_photo_', ''));
+        }
+      }
+      workouts.forEach(w => allDates.add(w.date));
+
+      const sortedDates = Array.from(allDates).sort();
+
+      sortedDates.forEach(date => {
+        const start = new Date(startDate);
+        const logDate = new Date(date);
+        const diffDays = Math.floor((logDate - start) / (1000 * 60 * 60 * 24)) + 1;
+        const dayNum = Math.max(1, Math.min(diffDays, 75));
+
+        const tasks = JSON.parse(localStorage.getItem(`75_tasks_${date}`) || '{}');
+        const hasPhoto = localStorage.getItem(`75_photo_${date}`) ? "Yes" : "No";
+
+        const dayWorkouts = workouts.filter(w => w.date === date);
+
+        if (dayWorkouts.length > 0) {
+          dayWorkouts.forEach(w => {
+            const type = `"${(w.type || '').replace(/"/g, '""')}"`;
+            const duration = `"${(w.duration || '').replace(/"/g, '""')}"`;
+            const extra = `"${(w.extra || '').replace(/"/g, '""')}"`;
+            csvContent += `${date},Day ${dayNum},${type},${duration},${extra},${hasPhoto},${tasks.water ? "Yes":"No"},${tasks.read ? "Yes":"No"},${tasks.w1 ? "Yes":"No"},${tasks.w2 ? "Yes":"No"}\n`;
+          });
+        } else {
+          csvContent += `${date},Day ${dayNum},"None","0 mins","None",${hasPhoto},${tasks.water ? "Yes":"No"},${tasks.read ? "Yes":"No"},${tasks.w1 ? "Yes":"No"},${tasks.w2 ? "Yes":"No"}\n`;
+        }
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `75_Hard_Backup_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
 
       // Collect all keys from localStorage to capture every logged date
       const allDates = new Set();
