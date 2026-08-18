@@ -303,9 +303,12 @@
     }
 
     function changeTrackerDate() {
-      activeLogDate = document.getElementById('tracker-date-picker').value;
-      updateHeaderCounter();
-      loadChecklist();
+      const picker = document.getElementById('tracker-date-picker');
+      if (picker && picker.value) {
+        activeLogDate = picker.value; // Lock in the user's selected date
+        updateHeaderCounter();
+        loadChecklist();
+      }
     }
 
     function toggleMenu() {
@@ -705,7 +708,7 @@ function handlePhotoUpload(event) {
     // Initialize & refresh date when returning to the app
     setDateToToday();
     adjustWorkoutFields();
-    window.addEventListener('focus', setDateToToday);
+    
   </script>
 </body>
 </html>
