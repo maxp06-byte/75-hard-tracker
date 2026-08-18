@@ -268,17 +268,20 @@
     let currentFilter = 'All';
 
    function setDateToToday() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      
-      activeLogDate = `${year}-${month}-${day}`;
+  if (activeLogDate) return; // Stop if the user already selected a date
 
-      const picker = document.getElementById('tracker-date-picker');
-      if (picker) picker.value = activeLogDate;
-      updateHeaderCounter();
-      loadChecklist();
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+
+  activeLogDate = `${year}-${month}-${day}`;
+
+  const picker = document.getElementById('tracker-date-picker');
+  if (picker) picker.value = activeLogDate;
+  updateHeaderCounter();
+  loadChecklist();
+}
     }
     function calculateDayStats() {
       const start = new Date(startDate);
@@ -706,6 +709,7 @@ function handlePhotoUpload(event) {
     }
 
     // Initialize & refresh date when returning to the app
+    // Initialize on page load
     setDateToToday();
     adjustWorkoutFields();
     
